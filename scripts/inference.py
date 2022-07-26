@@ -13,10 +13,10 @@ except:
 import torch
 import torch.nn as nn
 
-from dataset_interface.siamese_net.model import SiameseNetwork
-from dataset_interface.siamese_net.utils import get_image_tensor
+from siamese_net.model import SiameseNetwork
+from siamese_net.utils import get_image_tensor
 from torchvision import datasets
-from dataset_interface.siamese_net.utils import get_transforms
+from siamese_net.utils import get_transforms
 import matplotlib.pyplot as plt
 
 class KNN():

@@ -10,8 +10,8 @@ except:
 import torch
 import torch.nn as nn
 
-from dataset_interface.siamese_net.model import SiameseNetwork
-from dataset_interface.siamese_net.utils import get_image_tensor
+from project_forsn.siamese_net.model import SiameseNetwork
+from project_forsn.siamese_net.utils import get_image_tensor
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()

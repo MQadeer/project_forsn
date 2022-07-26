@@ -13,16 +13,17 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 
-from dataset_interface.siamese_net.model import SiameseNetwork
-from dataset_interface.siamese_net.dataset import SiameseNetworkDataset
-from dataset_interface.siamese_net.loss import ContrastiveLoss
-from dataset_interface.siamese_net.utils import get_transforms
+from project_forsn.siamese_net.model import SiameseNetwork
+from project_forsn.siamese_net.model import SiameseNetwork
+from project_forsn.siamese_net.dataset import SiameseNetworkDataset
+from project_forsn.siamese_net.loss import ContrastiveLoss
+from project_forsn.siamese_net.utils import get_transforms
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-d', '--data_path', type=str,
                            help='Directory containing training data',
-                           default='/home/dlrv-ss22-face-recognition/workspace/augmented-faces')
+                           default='/home/dlrv-ss22-face-recognition/workspace/data/augmented-faces')
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a directory where the trained models (one per epoch) should be saved',
                            default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models')
