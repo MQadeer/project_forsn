@@ -13,11 +13,10 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 
-from project_forsn.siamese_net.model import SiameseNetwork
-from project_forsn.siamese_net.model import SiameseNetwork
-from project_forsn.siamese_net.dataset import SiameseNetworkDataset
-from project_forsn.siamese_net.loss import ContrastiveLoss
-from project_forsn.siamese_net.utils import get_transforms
+from siamese_net.model import SiameseNetwork
+from siamese_net.dataset import SiameseNetworkDataset
+from siamese_net.loss import ContrastiveLoss
+from siamese_net.utils import get_transforms
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
@@ -26,7 +25,7 @@ if __name__ == '__main__':
                            default='/home/dlrv-ss22-face-recognition/workspace/data/augmented-faces')
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a directory where the trained models (one per epoch) should be saved',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models')
+                           default='/home/dlrv-ss22-face-recognition/workspace/project_forsn/trained_models/e_15_b_16/')
     argparser.add_argument('-e', '--num_epochs', type=int,
                            help='Number of training epochs',
                            default=15)
@@ -35,7 +34,7 @@ if __name__ == '__main__':
                            default=1e-4)
     argparser.add_argument('-b', '--training_batch_size', type=int,
                            help='Training batch size',
-                           default=32)
+                           default=16)
     argparser.add_argument('-l', '--train_loss_file_path', type=str,
                            help='Path to a file in which training losses will be saved',
                            default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/train_loss.log')
