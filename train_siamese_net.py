@@ -13,7 +13,7 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 
-from siamese_net.model import SiameseNetwork
+from siamese_net.model import SiameseNetwork, initialize_weights
 from siamese_net.dataset import SiameseNetworkDataset
 from siamese_net.loss import ContrastiveLoss
 from siamese_net.utils import get_transforms
@@ -25,10 +25,10 @@ if __name__ == '__main__':
                            default='/home/dlrv-ss22-face-recognition/workspace/data/augmented-faces')
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a directory where the trained models (one per epoch) should be saved',
-                           default='/home/dlrv-ss22-face-recognition/workspace/project_forsn/trained_models/e_15_b_16/')
+                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/')
     argparser.add_argument('-e', '--num_epochs', type=int,
                            help='Number of training epochs',
-                           default=15)
+                           default=16)
     argparser.add_argument('-lr', '--learning_rate', type=float,
                            help='Initial learning rate',
                            default=1e-4)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
                            default=16)
     argparser.add_argument('-l', '--train_loss_file_path', type=str,
                            help='Path to a file in which training losses will be saved',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/train_loss.log')
+                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/train_loss.log')
 
     # we read all arguments
     args = argparser.parse_args()
@@ -77,6 +77,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = SiameseNetwork()
+    model.apply(initialize_weights)
     criterion = torch.nn.TripletMarginLoss(margin=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
@@ -104,7 +105,9 @@ if __name__ == '__main__':
             loss_contrastive.backward()
             optimizer.step()
             losses.append(loss_contrastive.item())
+            # print("loss in batch ",loss_contrastive.item())
         avg_loss = np.mean(losses)
+        print("no of losses",len(losses))
         print('Epoch number {}\n Average loss {}\n'.format(epoch, avg_loss))
 
         if train_loss_file_path:
