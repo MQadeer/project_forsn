@@ -8,13 +8,17 @@ class SiameseNetwork(nn.Module):
         super(SiameseNetwork, self).__init__()
         self.convnet = nn.Sequential(nn.Conv2d(3, 32, 5), nn.PReLU(),
                                      nn.MaxPool2d(2, stride=2),
+                                     nn.BatchNorm2d(32),
                                      nn.Conv2d(32, 64, 5), nn.PReLU(),
-                                     nn.MaxPool2d(2, stride=2))
+                                     nn.MaxPool2d(2, stride=2)
+                                     )
 
         self.fc = nn.Sequential(nn.Linear(30976, 64),
                                 nn.PReLU(),
+                                nn.BatchNorm1d(64),
                                 nn.Linear(64, 64),
                                 nn.PReLU(),
+                                nn.BatchNorm1d(64),
                                 nn.Linear(64, 50))
 
     def forward_once(self, x):

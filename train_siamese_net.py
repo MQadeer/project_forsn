@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import os
 import argparse
+from posixpath import dirname
+from statistics import mean, stdev
 
 import numpy as np
+import torchvision.transforms as transforms
 import sys
 try:
     sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
@@ -16,7 +19,7 @@ from torch.utils.data import DataLoader
 from siamese_net.model import SiameseNetwork, initialize_weights
 from siamese_net.dataset import SiameseNetworkDataset
 from siamese_net.loss import ContrastiveLoss
-from siamese_net.utils import get_transforms
+from siamese_net.utils import get_transforms, get_transform_norm
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
@@ -28,7 +31,7 @@ if __name__ == '__main__':
                            default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/')
     argparser.add_argument('-e', '--num_epochs', type=int,
                            help='Number of training epochs',
-                           default=16)
+                           default=20)
     argparser.add_argument('-lr', '--learning_rate', type=float,
                            help='Initial learning rate',
                            default=1e-4)
@@ -65,9 +68,14 @@ if __name__ == '__main__':
 
     # we create a data loader by instantiating an appropriate
     # dataset class depending on the annotation type
-    folder_dataset = torchvision.datasets.ImageFolder(root=data_path)
+    folder_dataset = torchvision.datasets.ImageFolder(data_path, transform=get_transforms())
+    dataloader = torch.utils.data.DataLoader(folder_dataset, batch_size=folder_dataset.__len__(), shuffle=False)
+    images, labels = next(iter(dataloader))
+    print(images.size())
+    means = torch.mean(images, dim=[0, 2, 3])
+    std = torch.std(images, dim=[0, 2, 3])
     siamese_dataset = SiameseNetworkDataset(image_folder_dataset=folder_dataset,
-                                            transform=get_transforms(),
+                                            transform=get_transform_norm(means, std),
                                             should_invert=False)
 
     train_dataloader = DataLoader(siamese_dataset,
@@ -97,6 +105,9 @@ if __name__ == '__main__':
     for epoch in range(num_epochs):
         losses = []
         for i, data in enumerate(train_dataloader):
+            # print(data[0].size())
+            # print(torch.mean(torch.stack(data),dim=[1,2]))
+            # normalized_data = transforms.Normalize(torch.mean(torch.stack(data)),torch.std(torch.stack(data)))
             anchor, positive, negative = data
             anchor, positive, negative = anchor.cuda(), positive.cuda(), negative.cuda()
             optimizer.zero_grad()

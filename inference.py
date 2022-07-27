@@ -112,7 +112,7 @@ if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a trained model',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/model_14.pt')
+                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/model_15.pt')
     argparser.add_argument('-d', '--dataset_path', type=str,
                            help='Path to dataset',
                            default='/home/dlrv-ss22-face-recognition/workspace/data/expressions3')
@@ -125,9 +125,9 @@ if __name__ == '__main__':
     dataset_path = args.dataset_path
     testset_path = args.testset_path
     knn = KNN(dataset_path, testset_path, model_path)
-    # predictions = knn.predict(40, 0.05)
-    # evals = knn.evaluate(predictions)
-    # print(evals)
-    mAP = knn.calculate_mAP(0.2, 0.01, 11, 2)
-    print(mAP)
+    predictions = knn.predict(2, 0.1)
+    evals = knn.evaluate(predictions)
+    print(evals)
+    # mAP = knn.calculate_mAP(0.2, 0.01, 11, 2)
+    # print(mAP)
 
