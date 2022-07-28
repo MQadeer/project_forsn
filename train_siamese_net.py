@@ -21,25 +21,38 @@ from siamese_net.utils import get_transforms, get_transform_norm
 
 if __name__ == '__main__':
     
+    lr= 1e-2
+    epochs = 15
+    batch_size = 64
+    margin = 0.1
+    gamma = 0.1
+    step_size = 5
+    
+    new_folder = "lr_" + str(lr) + "_e_" + str(epochs) + "_b_" + str(batch_size) + "_m_" + str(margin) + "_g_" + str(gamma) + "_s_" + str(step_size)
+    dir = '/home/dlrv-ss22-face-recognition/workspace/face-recognition-models'
+    loss_file = 'train_loss.log'
+    model_dir = os.path.join(dir, new_folder)
+    loss_file_dir = os.path.join(model_dir, loss_file)
+    
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-d', '--data_path', type=str,
                            help='Directory containing training data',
                            default='/home/dlrv-ss22-face-recognition/workspace/data/augmented-faces')
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a directory where the trained models (one per epoch) should be saved',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/')
+                           default=model_dir)
     argparser.add_argument('-e', '--num_epochs', type=int,
                            help='Number of training epochs',
-                           default=15)
+                           default=epochs)
     argparser.add_argument('-lr', '--learning_rate', type=float,
                            help='Initial learning rate',
-                           default=1e-2)
+                           default=lr)
     argparser.add_argument('-b', '--training_batch_size', type=int,
                            help='Training batch size',
-                           default=64)
+                           default=batch_size)
     argparser.add_argument('-l', '--train_loss_file_path', type=str,
                            help='Path to a file in which training losses will be saved',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/train_loss.log')
+                           default=loss_file_dir)
 
     # we read all arguments
     args = argparser.parse_args()
@@ -87,9 +100,9 @@ if __name__ == '__main__':
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     model = SiameseNetwork()
     model.apply(initialize_weights)
-    criterion = torch.nn.TripletMarginLoss(margin=0.1)
+    criterion = torch.nn.TripletMarginLoss(margin=margin)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     # we move the model to the correct device before training
     model.to(device)
@@ -124,5 +137,5 @@ if __name__ == '__main__':
                 loss_file.write(str(avg_loss).split(' ')[0] + '\n')
 
         lr_scheduler.step()
-        torch.save(model.state_dict(), os.path.join(model_path, 'model_{0}.pt'.format(epoch)))
+    torch.save(model.state_dict(), os.path.join(model_path, 'model.pt'))
     print('Training done')

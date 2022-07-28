@@ -110,9 +110,12 @@ class KNN():
                    
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
+    dir = '/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/lr_0.01_e_15_b_64_m_0.1_g_0.1_s_5/'
+    model_path = os.path.join(dir, 'model.pt')
+    eval_file = os.path.join(dir, "eval.txt")
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a trained model',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/model_14.pt')
+                           default=model_path)
     argparser.add_argument('-d', '--dataset_path', type=str,
                            help='Path to dataset',
                            default='/home/dlrv-ss22-face-recognition/workspace/data/expressions3')
@@ -127,9 +130,19 @@ if __name__ == '__main__':
     means = torch.Tensor([0.5240, 0.3407, 0.2634])
     std = torch.Tensor([0.2024, 0.1820, 0.1643])
     knn = KNN(dataset_path, testset_path, model_path, means, std)
-    predictions = knn.predict(1, 0.01)
+    k = 1
+    min_thresh = 0.01
+    max_thresh = 0.1
+    steps = 11
+    predictions = knn.predict(k, max_thresh)
     evals = knn.evaluate(predictions)
     print(evals)
-    mAP = knn.calculate_mAP(0.1, 0.01, 11, 1)
+    mAP = knn.calculate_mAP(max_thresh, min_thresh, steps, k)
     print(mAP)
 
+    with open(eval_file, 'w') as f:
+        f.write(str(evals))
+        f.write('\n')
+        f.write(str(mAP))
+    
+    f.close()
