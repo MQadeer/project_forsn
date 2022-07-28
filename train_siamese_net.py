@@ -28,13 +28,13 @@ if __name__ == '__main__':
                            default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/')
     argparser.add_argument('-e', '--num_epochs', type=int,
                            help='Number of training epochs',
-                           default=16)
+                           default=15)
     argparser.add_argument('-lr', '--learning_rate', type=float,
                            help='Initial learning rate',
-                           default=1e-4)
+                           default=1e-2)
     argparser.add_argument('-b', '--training_batch_size', type=int,
                            help='Training batch size',
-                           default=16)
+                           default=64)
     argparser.add_argument('-l', '--train_loss_file_path', type=str,
                            help='Path to a file in which training losses will be saved',
                            default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/train_loss.log')
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     model.apply(initialize_weights)
     criterion = torch.nn.TripletMarginLoss(margin=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     # we move the model to the correct device before training
     model.to(device)
