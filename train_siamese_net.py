@@ -16,9 +16,11 @@ from torch.utils.data import DataLoader
 from siamese_net.model import SiameseNetwork, initialize_weights
 from siamese_net.dataset import SiameseNetworkDataset
 from siamese_net.loss import ContrastiveLoss
-from siamese_net.utils import get_transforms
+from siamese_net.utils import get_transforms, get_transform_norm
+
 
 if __name__ == '__main__':
+    
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-d', '--data_path', type=str,
                            help='Directory containing training data',
@@ -65,9 +67,16 @@ if __name__ == '__main__':
 
     # we create a data loader by instantiating an appropriate
     # dataset class depending on the annotation type
+    folder_dataset = torchvision.datasets.ImageFolder(data_path, transform=get_transforms())
+    dataloader = torch.utils.data.DataLoader(folder_dataset, batch_size=folder_dataset.__len__(), shuffle=False)
+    images, labels = next(iter(dataloader))
+    means = torch.mean(images, dim=[0, 2, 3])
+    std = torch.std(images, dim=[0, 2, 3])
+    print(means)
+    print(std)
     folder_dataset = torchvision.datasets.ImageFolder(root=data_path)
     siamese_dataset = SiameseNetworkDataset(image_folder_dataset=folder_dataset,
-                                            transform=get_transforms(),
+                                            transform=get_transform_norm(means, std),
                                             should_invert=False)
 
     train_dataloader = DataLoader(siamese_dataset,

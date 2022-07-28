@@ -14,13 +14,13 @@ import torch
 import torch.nn as nn
 
 from siamese_net.model import SiameseNetwork
-from siamese_net.utils import get_image_tensor
+from siamese_net.utils import get_image_tensor, get_transform_norm
 from torchvision import datasets
 from siamese_net.utils import get_transforms
 import matplotlib.pyplot as plt
 
 class KNN():
-    def __init__(self, dataset_path, testset_path, model_path):
+    def __init__(self, dataset_path, testset_path, model_path, means, std):
         self.model = SiameseNetwork()
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
@@ -28,8 +28,8 @@ class KNN():
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(device)
         # get the dataset
-        self.dataset, self.dataset_labels, _ = self.__load_data(dataset_path)
-        self.testset, labels, _ = self.__load_data(testset_path)
+        self.dataset, self.dataset_labels, _ = self.__load_data(dataset_path, means, std)
+        self.testset, labels, _ = self.__load_data(testset_path, means, std)
         self.class_names = np.unique(labels.numpy()).astype(str)
         self.labels = labels.numpy().astype(str)
         
@@ -51,8 +51,8 @@ class KNN():
         return predictions
 
     
-    def __load_data(self, data_path):
-        dataset = datasets.ImageFolder(data_path, transform=get_transforms())
+    def __load_data(self, data_path, means, std):
+        dataset = datasets.ImageFolder(data_path, transform=get_transform_norm(means, std))
         
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=dataset.__len__(), shuffle=False) 
         images, labels = next(iter(dataloader))
@@ -124,10 +124,12 @@ if __name__ == '__main__':
     model_path = args.model_path
     dataset_path = args.dataset_path
     testset_path = args.testset_path
-    knn = KNN(dataset_path, testset_path, model_path)
-    predictions = knn.predict(3, 0.05)
+    means = torch.Tensor([0.5240, 0.3407, 0.2634])
+    std = torch.Tensor([0.2024, 0.1820, 0.1643])
+    knn = KNN(dataset_path, testset_path, model_path, means, std)
+    predictions = knn.predict(1, 0.01)
     evals = knn.evaluate(predictions)
     print(evals)
-    mAP = knn.calculate_mAP(0.2, 0.01, 11, 3)
+    mAP = knn.calculate_mAP(0.1, 0.01, 11, 1)
     print(mAP)
 

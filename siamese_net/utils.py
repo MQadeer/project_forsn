@@ -6,6 +6,12 @@ def get_transforms():
                                     transforms.ToTensor()])
     return transform
 
+def get_transform_norm(mean, std):
+    transform = transforms.Compose([transforms.Resize((100, 100)),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize(mean, std)])
+    return transform
+
 def get_image_tensor(img_path):
     img = Image.open(img_path)
     img = get_transforms()(img)
