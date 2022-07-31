@@ -14,13 +14,13 @@ import torch
 import torch.nn as nn
 
 from siamese_net.model import SiameseNetwork
-from siamese_net.utils import get_image_tensor
+from siamese_net.utils import get_image_tensor, get_transform_norm
 from torchvision import datasets
 from siamese_net.utils import get_transforms
 import matplotlib.pyplot as plt
 
 class KNN():
-    def __init__(self, dataset_path, testset_path, model_path):
+    def __init__(self, dataset_path, testset_path, model_path, means, std):
         self.model = SiameseNetwork()
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
@@ -28,8 +28,8 @@ class KNN():
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(device)
         # get the dataset
-        self.dataset, self.dataset_labels, _ = self.__load_data(dataset_path)
-        self.testset, labels, _ = self.__load_data(testset_path)
+        self.dataset, self.dataset_labels, _ = self.__load_data(dataset_path, means, std)
+        self.testset, labels, _ = self.__load_data(testset_path, means, std)
         self.class_names = np.unique(labels.numpy()).astype(str)
         self.labels = labels.numpy().astype(str)
         
@@ -51,8 +51,8 @@ class KNN():
         return predictions
 
     
-    def __load_data(self, data_path):
-        dataset = datasets.ImageFolder(data_path, transform=get_transforms())
+    def __load_data(self, data_path, means, std):
+        dataset = datasets.ImageFolder(data_path, transform=get_transform_norm(means, std))
         
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=dataset.__len__(), shuffle=False) 
         images, labels = next(iter(dataloader))
@@ -110,24 +110,39 @@ class KNN():
                    
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
+    dir = '/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/lr_0.01_e_15_b_64_m_0.1_g_0.1_s_5/'
+    model_path = os.path.join(dir, 'model.pt')
+    eval_file = os.path.join(dir, "eval.txt")
     argparser.add_argument('-m', '--model_path', type=str,
                            help='Path to a trained model',
-                           default='/home/dlrv-ss22-face-recognition/workspace/face-recognition-models/e_15_b_16_l_1e2/model_15.pt')
+                           default=model_path)
     argparser.add_argument('-d', '--dataset_path', type=str,
                            help='Path to dataset',
                            default='/home/dlrv-ss22-face-recognition/workspace/data/expressions3')
 
     argparser.add_argument('-i', '--testset_path', type=str,
                         help='Path to testset',
-                        default='/home/dlrv-ss22-face-recognition/workspace/data/test_photos')
+                        default='/home/dlrv-ss22-face-recognition/workspace/data/final_test')
     args = argparser.parse_args()
     model_path = args.model_path
     dataset_path = args.dataset_path
     testset_path = args.testset_path
-    knn = KNN(dataset_path, testset_path, model_path)
-    predictions = knn.predict(2, 0.1)
+    means = torch.Tensor([0.5240, 0.3407, 0.2634])
+    std = torch.Tensor([0.2024, 0.1820, 0.1643])
+    knn = KNN(dataset_path, testset_path, model_path, means, std)
+    k = 1
+    min_thresh = 0.01
+    max_thresh = 0.1
+    steps = 11
+    predictions = knn.predict(k, max_thresh)
     evals = knn.evaluate(predictions)
     print(evals)
-    # mAP = knn.calculate_mAP(0.2, 0.01, 11, 2)
-    # print(mAP)
+    mAP = knn.calculate_mAP(max_thresh, min_thresh, steps, k)
+    print(mAP)
 
+    with open(eval_file, 'w') as f:
+        f.write(str(evals))
+        f.write('\n')
+        f.write(str(mAP))
+    
+    f.close()
